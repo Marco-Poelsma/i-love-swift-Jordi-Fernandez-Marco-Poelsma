@@ -12,7 +12,7 @@ struct ContentView: View {
     
     var body: some View {
         VStack(spacing: 5) {
-            Text("---")
+            Text("🙈🙉🙊")
                 .font(.largeTitle)
             Text("80")
             HStack {
