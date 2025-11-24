@@ -14,20 +14,26 @@ struct ContentView: View {
             
             VStack {
                 
-                // MARK: - BARRA SUPERIOR
+                // MARK: - TOP BAR (Reset izquierda, Scores derecha)
                 HStack {
                     Button("🔄 Reset") {
                         gameStore.resetAll()
                         sliderValue = (Game.highNumber - Game.lowNumber) / 2
                     }
+                    .padding(.leading)
                     
                     Spacer()
                     
                     Button("🏆 Scores") {
                         showScoreboard = true
                     }
+                    .padding(.trailing)
                 }
-                .padding(.horizontal)
+                .padding(.top)
+                
+                
+                Spacer()    // Empuja el contenido hacia abajo
+                
                 
                 // MARK: - TÍTULO
                 Text("🙈🙉🙊")
@@ -46,7 +52,8 @@ struct ContentView: View {
                     highValue: Game.highNumber
                 )
                 
-                Text("Slider value tracking \(sliderValue)")
+                Text("Slider value tracking \(Int(sliderValue))")
+                
                 
                 // MARK: - BOTÓN TRY
                 Button("TRY") {
@@ -60,16 +67,22 @@ struct ContentView: View {
                 .cornerRadius(21.0)
                 .disabled(gameStore.isGameOver)
                 
-                // MARK: - INFO DEL JUGADOR
+                
+                Spacer()    // Empuja score y partidas hacia abajo
+                
+                
+                // MARK: - BOTTOM INFO (Score y Partidas)
                 VStack(spacing: 8) {
                     Text("Score total: \(gameStore.totalScore)")
+                        .font(.title2)
                     Text("Partidas jugadas: \(gameStore.gamesPlayed)")
+                        .font(.title2)
                 }
-                .padding(.top)
+                .padding(.bottom, 30)
             }
-            .padding()
-            
+            .padding(.horizontal)
         }
+        
         
         // MARK: - ALERTAS
         .alert(isPresented: $alertVisible) {
@@ -78,7 +91,7 @@ struct ContentView: View {
                 return Alert(
                     title: Text("Game Over 💀"),
                     message: Text("Tu score total fue \(gameStore.totalScore)"),
-                    dismissButton: .default(Text("OK")) {}
+                    dismissButton: .default(Text("OK"))
                 )
             } else {
                 return Alert(
@@ -92,14 +105,15 @@ struct ContentView: View {
             }
         }
         
+        
         // MARK: - SCOREBOARD
         .sheet(isPresented: $showScoreboard) {
             ScoreboardView(showScoreboard: $showScoreboard)
                 .environmentObject(gameStore)
         }
-
     }
 }
+
 
 struct SliderView: View {
     @Binding var value: Double
@@ -112,6 +126,7 @@ struct SliderView: View {
                 .fontWeight(.bold)
             
             Slider(value: $value, in: lowValue...highValue)
+                .accentColor(.green) // Funciona en iOS 13+
                 .padding(.horizontal)
             
             Text("\(Int(highValue))")
