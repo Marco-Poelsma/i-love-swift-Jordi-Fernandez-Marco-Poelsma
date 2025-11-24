@@ -1,61 +1,121 @@
-//
-//  ContentView.swift
-//  Game
-//
-//  Created by alumne on 27/10/2025.
-//
-
 import SwiftUI
 
 struct ContentView: View {
+    
+    @EnvironmentObject var gameStore: GameStore
+    
     @State private var alertVisible = false
-    @State var sliderValue = 50.0
+    @State private var sliderValue = (Game.highNumber-Game.lowNumber)/2
+    @State private var showScoreboard = false
+    
     var body: some View {
-        VStack(spacing: 5) {
+        ZStack() {
             Color("BackgroundColor").ignoresSafeArea()
-            //VStack()
-            Text("🙈🙉🙊")
-                .font(.largeTitle)
-            Text("80")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .kerning(-1)
-            SliderView(value: $sliderValue, lowValue: 1,highValue: 100)
-            Text("Slider value tracking \(sliderValue)")
-            Button("TRY") {
-                alertVisible = true
+            
+            VStack {
+                
+                // MARK: - BARRA SUPERIOR
+                HStack {
+                    Button("🔄 Reset") {
+                        gameStore.resetAll()
+                        sliderValue = (Game.highNumber - Game.lowNumber) / 2
+                    }
+                    
+                    Spacer()
+                    
+                    Button("🏆 Scores") {
+                        showScoreboard = true
+                    }
+                }
+                .padding(.horizontal)
+                
+                // MARK: - TÍTULO
+                Text("🙈🙉🙊")
+                    .font(.largeTitle)
+                
+                // MARK: - NÚMERO A ADIVINAR
+                Text("\(gameStore.game.guessNumber)")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .kerning(-1)
+                
+                // MARK: - SLIDER
+                SliderView(
+                    value: $sliderValue,
+                    lowValue: Game.lowNumber,
+                    highValue: Game.highNumber
+                )
+                
+                Text("Slider value tracking \(sliderValue)")
+                
+                // MARK: - BOTÓN TRY
+                Button("TRY") {
+                    gameStore.calculatePoints(value: sliderValue)
+                    alertVisible = true
+                }
+                .padding()
+                .font(.title)
+                .background(Color.red)
+                .foregroundColor(.white)
+                .cornerRadius(21.0)
+                .disabled(gameStore.isGameOver)
+                
+                // MARK: - INFO DEL JUGADOR
+                VStack(spacing: 8) {
+                    Text("Score total: \(gameStore.totalScore)")
+                    Text("Partidas jugadas: \(gameStore.gamesPlayed)")
+                }
+                .padding(.top)
             }
             .padding()
-            .font(.title)
-            .background(Color.red)
-            .foregroundColor(.white)
-            .cornerRadius(21.0)
-            .alert(isPresented: $alertVisible) {
-                Alert(
-                    title: Text("Hello"),
-                    message: Text("This is my first alert"),
-                    dismissButton: .default(Text("Got it"))
+            
+        }
+        
+        // MARK: - ALERTAS
+        .alert(isPresented: $alertVisible) {
+            
+            if gameStore.isGameOver {
+                return Alert(
+                    title: Text("Game Over 💀"),
+                    message: Text("Tu score total fue \(gameStore.totalScore)"),
+                    dismissButton: .default(Text("OK")) {}
+                )
+            } else {
+                return Alert(
+                    title: Text("Buen tiro!"),
+                    message: Text("Puntos obtenidos: \(gameStore.game.points)"),
+                    dismissButton: .default(Text("OK")) {
+                        gameStore.restart()
+                        sliderValue = (Game.highNumber - Game.lowNumber)/2
+                    }
                 )
             }
         }
-    }
-}
+        
+        // MARK: - SCOREBOARD
+        .sheet(isPresented: $showScoreboard) {
+            ScoreboardView(showScoreboard: $showScoreboard)
+                .environmentObject(gameStore)
+        }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
     }
 }
 
 struct SliderView: View {
-    @Binding var value:Double
-    let lowValue:Double
-    let highValue:Double
+    @Binding var value: Double
+    let lowValue: Double
+    let highValue: Double
+    
     var body: some View {
         HStack {
-            Text("\(Int(lowValue))").fontWeight(.bold)
+            Text("\(Int(lowValue))")
+                .fontWeight(.bold)
+            
             Slider(value: $value, in: lowValue...highValue)
-            Text("\(Int(highValue))").fontWeight(.bold)
+                .padding(.horizontal)
+            
+            Text("\(Int(highValue))")
+                .fontWeight(.bold)
         }
         .padding(.horizontal)
     }

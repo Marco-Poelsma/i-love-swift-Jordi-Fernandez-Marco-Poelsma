@@ -8,10 +8,13 @@
 import SwiftUI
 
 @main
-struct Game1919App: App {
+struct GameApp: App {
+    @StateObject var gameStore = GameStore()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(gameStore)
         }
     }
 }
